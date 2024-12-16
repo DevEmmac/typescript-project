@@ -1,7 +1,7 @@
-import { useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import "./App.css";
 
-const Heading = ({title}: {title: string}) => <h2 className="text">{title}</h2>;
+const Heading = ({title}: {title: string}) => <h2>{title}</h2>;
 
 const Box = ({children}: { children: React.ReactNode}) => (
   <div style={{
@@ -12,26 +12,42 @@ const Box = ({children}: { children: React.ReactNode}) => (
   </div>
 );
 
-const List: React.FunctionComponent<{items: string[]; onClick?: (item: string) => void}> = ({items, onClick }) => (
+const List: React.FunctionComponent<{
+  items: string[];
+  onClick?: (item: string) => void}> = 
+  ({items, onClick }) => (
   <ul>
      {items.map((item, index) => (
       <li key={index} onClick={() => onClick?.(item)}>{item}</li>
-     ) )}
+     ))}
   </ul>
 )
 
-
+interface Payload {
+  text: string;
+}
 
 function App() {
   const onListClick = useCallback((item: string) => {
-    alert(item)
-  }, []  );
+    alert(item);
+  }, []);
+
+  const [payload, setPayload] = useState<Payload | null>(null);
+
+  useEffect(() => {
+    fetch("./data.json")
+     .then(resp => resp.json())
+     .then(data => {
+        setPayload(data)
+     });
+  }, []);
 
   return ( 
     <div>
         <Heading title="Introduction" />
-          <Box>hello typescript</Box>
-          <List items={["one","two","three"]} onClick={onListClick}/>
+          <Box>Hello typescript</Box>
+          <List items={["one","two","three"]} onClick={onListClick} />
+          <Box>{JSON.stringify(payload)}</Box>
     </div>
   );
 }
