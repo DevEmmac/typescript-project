@@ -35,6 +35,15 @@ interface Todo {
 
 type ActionType = | {type: "ADD", text: string } | {type: "REMOVE"; id: number};
 
+const Incrementer:React.FunctionComponent<{
+  value: number;
+  setValue: React.Dispatch<React.SetStateAction<number>>
+}> = ({value}) => {
+  <button>
+    Add - {value}
+  </button>
+}
+
 function App() {
   const onListClick = useCallback((item: string) => {
     alert(item);
@@ -64,7 +73,7 @@ function App() {
           },
         ];
         case "REMOVE": 
-          return state.filter(({id}) => id === action.id);
+          return state.filter(({id}) => id !== action.id);
         default:
           throw new Error();
       }
@@ -81,13 +90,16 @@ function App() {
        })
        newTodoRef.current.value 
     }
-  }, [])
+  }, []);
+
+  const [value, setvalue] = useState(0);
      
   return ( 
     <div>
         <Heading title="Introduction" />
         <Box>Hello typescript</Box>
         <List items={["one","two","three"]} onClick={onListClick} />
+
         <Box>{JSON.stringify(payload)}</Box>
          
         <Heading title="Todos" />
