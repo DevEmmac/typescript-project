@@ -1,6 +1,7 @@
-import React, { useCallback, useEffect, useReducer, useRef, useState } from "react";
+import React, { useCallback, useRef } from "react";
 import "./App.css";
 import Increasement from "./Increasement";
+import { useTodos } from "./useTodos";
 
 const Heading = ({title}: {title: string}) => <h2>{title}</h2>;
 
@@ -26,39 +27,19 @@ const Button: React.FunctionComponent<
 
 
 function App() {
- 
-  // const [todos, dispatch] = useReducer(
-  //   (state: Todo[], action: ActionType) => {
-  //     switch (action.type) {
-  //       case "ADD":
-  //       return [
-  //         ...state,
-  //         { 
-  //           id: state.length,
-  //           text: action.text,
-  //           done: false,
-  //         },
 
-  //       ];
-  //       case "REMOVE": 
-  //         return state.filter(({id}) => id !== action.id);
-  //       default:
-  //         throw new Error();
-  //     }
-
-  // }, []);
+ const { todos, addTodo, removeTodo} = useTodos ([
+  { id: 0, text: "Hey there", done: false }
+ ]);
 
   const newTodoRef = useRef<HTMLInputElement>(null);
 
   const onAddTodo = useCallback(() => {
     if (newTodoRef.current) {
-      dispatch({
-        type: "ADD",
-        text: newTodoRef.current.value,
-       })
+      addTodo(newTodoRef.current.value);
        newTodoRef.current.value = "";
     }
-  }, []); 
+  }, [addTodo]); 
 
   return ( 
     <div>
@@ -70,11 +51,7 @@ function App() {
         {todos.map((todo) => (
           <div key={todo.id}>
              {todo.text}
-             <button onClick={() => dispatch({
-              type: "REMOVE",
-              id: todo.id,
-             })
-             }>Remove</button>
+             <button onClick={() => removeTodo(todo.id)}>Remove</button>
           </div>
           ))}
           <div>
