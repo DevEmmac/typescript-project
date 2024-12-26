@@ -1,7 +1,7 @@
-import React, { Children, useCallback, useRef } from "react";
+import React, { useCallback, useRef } from "react";
 import "./App.css";
 import Increasement from "./Increasement";
-import { useTodos } from "./useTodos";
+import { useTodos, TodosProvider, useAddTodo, useRemoveTodo } from "./useTodos";
 
 const Heading = ({title}: {title: string}) => <h2>{title}</h2>;
 
@@ -42,11 +42,10 @@ function UL<T>({ items, render, itemClick}:
 
 
 function App() {
-
- const { todos, addTodo, removeTodo} = useTodos ([
-  { id: 0, text: "Hey there", done: false }
- ]);
-
+  const todos = useTodos();
+  const addTodo = useAddTodo;
+  const removeTodo = useRemoveTodo;
+ 
   const newTodoRef = useRef<HTMLInputElement>(null);
 
   const onAddTodo = useCallback(() => {
@@ -72,13 +71,6 @@ function App() {
           </>
         )} />
 
-        {/* {todos.map((todo) => (
-          <div key={todo.id}>
-             {todo.text}
-             <button onClick={() => removeTodo(todo.id)}>Remove</button>
-          </div>
-          ))} */}
-
           <div>
             <input type="text" ref={newTodoRef}/>
             <Button onClick={onAddTodo}>Add Todo</Button>
@@ -87,4 +79,16 @@ function App() {
   );
 }
 
-export default App;
+const Appwrapper = () => (
+  <TodosProvider initialTodos={[ { id: 0, text: "Hey there useContext", done: false }]}>
+      <div style={{
+    display: "grid",
+    gridTemplateColumns: "50% 50%"
+  }}>
+    <App></App>
+    <App></App>
+  </div>
+  </TodosProvider>
+)
+
+export default Appwrapper;
