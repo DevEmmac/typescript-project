@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from "react";
+import React, { Children, useCallback, useRef } from "react";
 import "./App.css";
 import Increasement from "./Increasement";
 import { useTodos } from "./useTodos";
@@ -25,6 +25,21 @@ const Button: React.FunctionComponent<
   {title ?? children}
   </button>)
 
+// Creating ageneric component  
+function UL<T>({ items, render, itemClick}:  
+  React.DetailedHTMLProps<React.HTMLAttributes<HTMLUListElement>,
+  HTMLUListElement >
+  & { items: T[]; render: (item: T) => React.ReactNode; itemClick: (item: T) => void}) {
+  return (
+    <ul>
+      {items.map((item, index) => (
+        <li onClick={() => itemClick(item)} key={index}>{render(item)}</li>
+      ))}
+    </ul>
+  )   
+  
+}
+
 
 function App() {
 
@@ -48,12 +63,22 @@ function App() {
         <Box>Hello typescript</Box>
 
         <Heading title="Todos" />
-        {todos.map((todo) => (
+
+        <UL items={todos} itemClick={(item)  => alert(item.id)} render={(todo)  => (
+
+          <>
+           {todo.text}
+           <button onClick={( ) => removeTodo(todo.id)}>Remove</button>
+          </>
+        )} />
+
+        {/* {todos.map((todo) => (
           <div key={todo.id}>
              {todo.text}
              <button onClick={() => removeTodo(todo.id)}>Remove</button>
           </div>
-          ))}
+          ))} */}
+
           <div>
             <input type="text" ref={newTodoRef}/>
             <Button onClick={onAddTodo}>Add Todo</Button>

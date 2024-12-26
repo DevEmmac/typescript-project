@@ -10,6 +10,7 @@ interface Todo {
   text: string;
 }
 
+// Creating useTodos
 export function useTodos (initialTodos: Todo[]): {
     todos: Todo[];
     addTodo: (text: string) => void;
