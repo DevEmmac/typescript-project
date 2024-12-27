@@ -29,22 +29,21 @@ const Button: React.FunctionComponent<
 function UL<T>({ items, render, itemClick}:  
   React.DetailedHTMLProps<React.HTMLAttributes<HTMLUListElement>,
   HTMLUListElement >
-  & { items: T[]; render: (item: T) => React.ReactNode; itemClick: (item: T) => void}) {
+  & { items: T[]; render: (item: T) => React.ReactNode; itemClick: (item: T) => void;}) {
   return (
     <ul>
       {items.map((item, index) => (
         <li onClick={() => itemClick(item)} key={index}>{render(item)}</li>
       ))}
     </ul>
-  )   
-  
+  );  
 }
 
 
 function App() {
   const todos = useTodos();
-  const addTodo = useAddTodo;
-  const removeTodo = useRemoveTodo;
+  const addTodo = useAddTodo();
+  const removeTodo = useRemoveTodo();
  
   const newTodoRef = useRef<HTMLInputElement>(null);
 
@@ -79,16 +78,27 @@ function App() {
   );
 }
 
+const JustShowTodos= () => {
+  const todos = useTodos();
+  return (
+    <UL 
+    items={todos} 
+    itemClick={() => {}} 
+    render={(todo) => (<>{todo.text}</>
+    )} />
+  )
+}
+
 const Appwrapper = () => (
   <TodosProvider initialTodos={[ { id: 0, text: "Hey there useContext", done: false }]}>
-      <div style={{
-    display: "grid",
-    gridTemplateColumns: "50% 50%"
-  }}>
-    <App></App>
-    <App></App>
-  </div>
-  </TodosProvider>
+        <div style={{
+      display: "grid",
+      gridTemplateColumns: "50% 50%"
+    }}>
+      <App></App>
+      <JustShowTodos></JustShowTodos> 
+    </div>
+    </TodosProvider>
 )
 
 export default Appwrapper;

@@ -5,24 +5,24 @@ type ActionType = | {type: "ADD"; text: string } | {type: "REMOVE"; id: number};
 
 
 interface Todo {
-  id: number;
-  done: boolean;
-  text: string;
+  id: number,
+  done: boolean,
+  text: string,
 }  
 
-type UserTodosManagerResult = ReturnType<typeof useTodosManager>; 
+type UseTodosManagerResult = ReturnType<typeof useTodosManager>; 
 
-const TodoContext = createContext<UserTodosManagerResult>({
+const TodoContext = createContext<UseTodosManagerResult>({
    todos: [],
    addTodo: () => {},
    removeTodo: () => {},
 })
 
 // Creating useTodos
-export function useTodosManager (initialTodos: Todo[]): {
-    todos: Todo[];
-    addTodo: (text: string) => void;
-    removeTodo: (id: number) => void;
+function useTodosManager (initialTodos: Todo[]): {
+    todos: Todo[],
+    addTodo: (text: string) => void,
+    removeTodo: (id: number) => void,
 } {
       const [todos, dispatch] = useReducer(
         (state: Todo[], action: ActionType) => {
@@ -35,7 +35,7 @@ export function useTodosManager (initialTodos: Todo[]): {
                 text: action.text,
                 done: false,
               },
-                        
+
         ];
         case "REMOVE": 
           return state.filter(({id}) => id !== action.id);
@@ -49,7 +49,7 @@ export function useTodosManager (initialTodos: Todo[]): {
     dispatch({
         type: "ADD",
         text
-    })
+      })
   }, []);
 
   const removeTodo = useCallback((id: number) => {
@@ -59,26 +59,29 @@ export function useTodosManager (initialTodos: Todo[]): {
     });
   }, []);
 
-  return { todos, addTodo, removeTodo }
+  return { todos, addTodo, removeTodo };
 }
 
-export const TodosProvider:React.FunctionComponent<{
-    initialTodos: Todo[]
+export const TodosProvider: React.FunctionComponent<{ children: string,
+  initialTodos: Todo[];
 }> = ({ initialTodos, children }) => (
-    <TodoContext.Provider value={useTodosManager(initialTodos)}> {children} </TodoContext.Provider>
-)
+  <TodoContext.Provider value={useTodosManager(initialTodos)}>
+    {children}
+  </TodoContext.Provider>
+);
 
+         
 export const useTodos = (): Todo[] => {
     const { todos }= useContext(TodoContext);
     return todos;
-}
+} 
  
-export const useAddTodo = (): UserTodosManagerResult["addTodo"] => {
+export const useAddTodo = (): UseTodosManagerResult["addTodo"] => {
     const { addTodo }= useContext(TodoContext);
     return addTodo;
 }
 
-export const useRemoveTodo = (): UserTodosManagerResult["removeTodo"] => {
+export const useRemoveTodo = (): UseTodosManagerResult["removeTodo"] => {
     const { removeTodo }= useContext(TodoContext);
     return removeTodo;
 }
