@@ -1,8 +1,6 @@
 // import React from 'react';
-import { useCallback, useReducer, createContext, useContext } from "react";
-
-type ActionType = | {type: "ADD"; text: string } | {type: "REMOVE"; id: number};
-
+import { useCallback, useEffect } from "react";
+import { createGlobalState } from "react-use";
 
 interface Todo {
   id: number,
@@ -10,78 +8,33 @@ interface Todo {
   text: string,
 }  
 
-type UseTodosManagerResult = ReturnType<typeof useTodosManager>; 
+const useGlobalTodos = createGlobalState<Todo[]>([])
 
-const TodoContext = createContext<UseTodosManagerResult>({
-   todos: [],
-   addTodo: () => {},
-   removeTodo: () => {},
-})
-
-// Creating useTodos
-function useTodosManager (initialTodos: Todo[]): {
+export function useTodos (initialTodos: Todo[]): {
     todos: Todo[],
     addTodo: (text: string) => void,
     removeTodo: (id: number) => void,
 } {
-      const [todos, dispatch] = useReducer(
-        (state: Todo[], action: ActionType) => {
-          switch (action.type) {
-            case "ADD":
-            return [
-              ...state,
-              { 
-                id: state.length,
-                text: action.text,
-                done: false,
-              },
+    const [todos, setTodos] = useGlobalTodos();
 
-        ];
-        case "REMOVE": 
-          return state.filter(({id}) => id !== action.id);
-        default:
-          throw new Error();
-      }
-
-  }, initialTodos);
+  useEffect(() => {
+    setTodos(initialTodos);
+  }, [initialTodos, setTodos])
 
   const addTodo = useCallback((text: string) => {
-    dispatch({
-        type: "ADD",
-        text
-      })
-  }, []);
+     setTodos(
+      [...todos,
+        { 
+          id: todos.length,
+          text: text,
+          done: false,
+        },
+      ]);
+  }, [todos, setTodos]);
 
-  const removeTodo = useCallback((id: number) => {
-    dispatch({
-        type: "REMOVE",
-        id,
-    });
-  }, []);
+  const removeTodo = useCallback((removeId: number) => {
+    setTodos(todos.filter(({ id }) => id !== removeId))
+  }, [todos, setTodos]);
 
   return { todos, addTodo, removeTodo };
-}
-
-export const TodosProvider: React.FunctionComponent<{ children: string,
-  initialTodos: Todo[];
-}> = ({ initialTodos, children }) => (
-  <TodoContext.Provider value={useTodosManager(initialTodos)}>
-    {children}
-  </TodoContext.Provider>
-);
-
-         
-export const useTodos = (): Todo[] => {
-    const { todos }= useContext(TodoContext);
-    return todos;
-} 
- 
-export const useAddTodo = (): UseTodosManagerResult["addTodo"] => {
-    const { addTodo }= useContext(TodoContext);
-    return addTodo;
-}
-
-export const useRemoveTodo = (): UseTodosManagerResult["removeTodo"] => {
-    const { removeTodo }= useContext(TodoContext);
-    return removeTodo;
 }
