@@ -19,7 +19,7 @@ export function useTodos (initialTodos: Todo[]): {
 
   useEffect(() => {
     setTodos(initialTodos);
-  }, [initialTodos, setTodos])
+  }, [initialTodos, setTodos]);
 
   const addTodo = useCallback((text: string) => {
      setTodos(

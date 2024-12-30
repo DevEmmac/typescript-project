@@ -1,9 +1,9 @@
 import React, { useCallback, useRef } from "react";
 import "./App.css";
 import Increasement from "./Increasement";
-// import { useTodos} from "./useTodos";
+import { useTodos} from "./useTodos";
 import store, {selectTodos, addTodo, removeTodo} from './store';
-import { Provider, useSelector, useDispatch } from 'react-redux';
+import { Provider, useSelector } from 'react-redux';
 
 const Heading = ({title}: {title: string}) => <h2>{title}</h2>;
 
@@ -19,7 +19,7 @@ const Box = ({children}: { children: React.ReactNode}) => (
 
 const Button: React.FunctionComponent<
   React.DetailedHTMLProps<React.ButtonHTMLAttributes<HTMLButtonElement>,
-  HTMLButtonElement & {title?:string}>
+  HTMLButtonElement & {title?: string}>
 > = ({ title, children, style, ...rest }) => (
   <button
   {...rest}
@@ -41,21 +41,23 @@ function UL<T>({ items, render, itemClick}:
   );  
 }
 
-// const initialTodos = [{ id: 0, text: "Hey there", done: false  }];
+const initialTodos = [{ id: 0, text: "Hey there", done: false  }];
 
 function App() {
 
-  const todos = useSelector(selectTodos);
-  const dispatch = useDispatch();
+  const { todos, addTodo, removeTodo } = useTodos(initialTodos);
+
+  // const todos = useSelector(selectTodos);
+  // const dispatch = useDispatch();
  
   const newTodoRef = useRef<HTMLInputElement>(null);
 
   const onAddTodo = useCallback(() => {
     if (newTodoRef.current) {
-      dispatch(addTodo(newTodoRef.current.value));
+      addTodo(newTodoRef.current.value);
       newTodoRef.current.value = "";
     }
-  }, [dispatch]);
+  }, [addTodo]);
 
   return ( 
     <div>
@@ -71,7 +73,7 @@ function App() {
         render={(todo) => (
           <>
             {todo.text}
-            <button onClick={() => dispatch(removeTodo(todo.id))}>
+            <button onClick={() => (removeTodo(todo.id))}>
               Remove
             </button>
           </>
@@ -88,12 +90,12 @@ function App() {
 
 
 const JustTheTodos = () => {
-  const todos = useSelector(selectTodos);
+  const {todos} = useTodos(initialTodos);
   return (
     <UL
       items={todos}
       itemClick={() => {}}
-      render={(todo) => <>{todo.text}</>}
+      render={(todo) => (<>{todo.text}</>)}
     />
   );
 };
