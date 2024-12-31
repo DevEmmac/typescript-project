@@ -5,7 +5,7 @@
 // })
 
 import { configureStore, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { useSelector } from "react-redux";
+// import { useSelector } from "react-redux";
 
 interface Todo {
   id: number;
@@ -53,4 +53,4 @@ type RootState = ReturnType<typeof store.getState>;
 
 export const selectTodos = (state: RootState) => state.todos.todos;
 
-export default store;
+export default store; 
