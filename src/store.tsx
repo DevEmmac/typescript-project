@@ -1,11 +1,5 @@
-// import { configureStore } from '@reduxjs/toolkit'
-
-// export default configureStore({
-//   reducer: {}
-// })
-
 import { configureStore, createSlice, PayloadAction } from "@reduxjs/toolkit";
-// import { useSelector } from "react-redux";
+
 
 interface Todo {
   id: number;
@@ -35,13 +29,11 @@ export const todosSlice = createSlice({
         },
       ];
     },
-    removeTodo: (state, action: PayloadAction<number>) => {
-      state.todos = state.todos.filter(({ id }) => id !== action.payload);
-    },
+    
   },
 });
 
-export const { addTodo, removeTodo } = todosSlice.actions;
+export const { addTodo } = todosSlice.actions;
 
 const store = configureStore({
   reducer: {

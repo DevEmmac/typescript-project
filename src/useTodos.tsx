@@ -1,6 +1,27 @@
-// import React from 'react';
-import { useCallback, useEffect } from "react";
-import { createGlobalState } from "react-use";
+import { create } from 'zustand';
+import { createMachine, assign } from 'xstate';
+
+const todoMachine = createMachine<{
+ todos: Todo[];
+}, { type: "SET_TODOS": todos: Todo[]}> ({
+  id: "todoMachine",
+  initial: "editing",
+  context: {
+    todos: [],
+  },
+  states: {
+    editing: {
+      on: {
+        SET_TODO: {
+          actions: assign({
+            todos: (_, { todos }) => todos
+          })
+        }
+      }
+    },
+     working: {},
+  },
+}); 
 
 interface Todo {
   id: number,
@@ -8,33 +29,27 @@ interface Todo {
   text: string,
 }  
 
-const useGlobalTodos = createGlobalState<Todo[]>([])
+const useTodos = create<{
+  todos: Todo[];
+  addTodo: (text: string) => void;
+  removeTodo: (removeId: number) => void; 
+}>((set) => ({
+   todos: [{ id: 0, text: "hey there", done: false }],
+   addTodo: (text: string) => set((state) => ({
+    ...state,
+    todos: [...state.todos,
+      { 
+        id: state.todos.length,
+        text,
+        done: false,
+      },
+    ]
+   })),
+   removeTodo: (removeId: number) => set((state) => ({
+   ...state,
+   todos: state.todos.filter(({ id }) => id !== removeId)
 
-export function useTodos (initialTodos: Todo[]): {
-    todos: Todo[],
-    addTodo: (text: string) => void,
-    removeTodo: (id: number) => void,
-} {
-    const [todos, setTodos] = useGlobalTodos();
+   })),
+}));
 
-  useEffect(() => {
-    setTodos(initialTodos);
-  }, [initialTodos, setTodos]);
-
-  const addTodo = useCallback((text: string) => {
-     setTodos(
-      [...todos,
-        { 
-          id: todos.length,
-          text: text,
-          done: false,
-        },
-      ]);
-  }, [todos, setTodos]);
-
-  const removeTodo = useCallback((removeId: number) => {
-    setTodos(todos.filter(({ id }) => id !== removeId))
-  }, [todos, setTodos]);
-
-  return { todos, addTodo, removeTodo };
-}
+export default useTodos;

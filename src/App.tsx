@@ -1,11 +1,12 @@
 import React, { useCallback, useRef } from "react";
 import "./App.css";
 import Increasement from "./Increasement";
-import { useTodos} from "./useTodos";
-import store, {selectTodos, addTodo, removeTodo} from './store';
-import { Provider, useSelector, useDispatch } from 'react-redux';
+import useTodos from "./useTodos";
+import store from './store';
+import { Provider } from 'react-redux';
+// import { render } from "@testing-library/react";
 
-const Heading = ({title}: {title: string}) => <h2>{title}</h2>;
+const Heading = ({ title }: { title: string }) => <h2>{title}</h2>;
 
 const Box = ({children}: { children: React.ReactNode}) => (
   <div style={{
@@ -40,23 +41,21 @@ function UL<T>({ items, render, itemClick}:
     </ul>
   );  
 }
-
-// const initialTodos = [{ id: 0, text: "Hey there", done: false  }];
+ 
 
 function App() {
-  const todos = useSelector(selectTodos);
-  // const { todos, addTodo, removeTodo } = useTodos(initialTodos);
 
-  const dispatch = useDispatch();
+  const { todos, addTodo, removeTodo } = useTodos((state) => state);
+
  
   const newTodoRef = useRef<HTMLInputElement>(null);
-
+ 
   const onAddTodo = useCallback(() => {
     if (newTodoRef.current) {
-      dispatch(addTodo(newTodoRef.current.value));
+      addTodo(newTodoRef.current.value);
       newTodoRef.current.value = "";
     }
-  }, [dispatch]);
+  }, [addTodo]);
 
   return ( 
     <div>
@@ -72,15 +71,13 @@ function App() {
         render={(todo) => (
           <>
             {todo.text}
-            <button onClick={() => dispatch(removeTodo(todo.id))}>
-              Remove
-            </button>
+            <button onClick={() => removeTodo((todo.id))}> Remove </button>
           </>
         )}
       />
 
           <div>
-            <input type="text" ref={newTodoRef}/>
+            <input type="text" ref={newTodoRef} />
             <Button onClick={onAddTodo}>Add Todo</Button>
           </div>
     </div>  
@@ -89,7 +86,7 @@ function App() {
 
 
 const JustTheTodos = () => {
-  const todos = useSelector(selectTodos);
+  const todos = useTodos((state) => state.todos);
   return (
     <UL
       items={todos}
