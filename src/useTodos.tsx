@@ -1,55 +1,133 @@
-import { create } from 'zustand';
-import { createMachine, assign } from 'xstate';
-
-const todoMachine = createMachine<{
- todos: Todo[];
-}, { type: "SET_TODOS": todos: Todo[]}> ({
-  id: "todoMachine",
-  initial: "editing",
-  context: {
-    todos: [],
-  },
-  states: {
-    editing: {
-      on: {
-        SET_TODO: {
-          actions: assign({
-            todos: (_, { todos }) => todos
-          })
-        }
-      }
-    },
-     working: {},
-  },
-}); 
+import { createMachine, assign } from "xstate";
+import { useCallback, useEffect } from "react";
+import { useMachine } from "@xstate/react";
 
 interface Todo {
-  id: number,
-  done: boolean,
-  text: string,
-}  
+  id: number;
+  done: boolean;
+  text: string;
+}
 
-const useTodos = create<{
+
+type MachineEvent = {todos: Todo[]};
+
+type MachineContext = 
+| { type: "END_WORKING" }
+| { type: "START_WORKING" }
+| { type: "SET_TODOS"; todos: Todo[] }
+| { type: "ADD_TODO"; text: string }
+| { type: "REMOVE_TODO"; id: number };
+
+const todoMachine = createMachine<MachineEvent, MachineContext>({
+    id: "todoMachine",
+    initial: "editing",
+    context: {
+      todos: [],
+    },
+    states: {
+      editing: {
+        on: {
+          START_WORKING: {
+            target: "working",
+            cond: "haveUndoneTodos",
+          },
+          ADD_TODO: {
+            actions: assign({
+              todo: ( todo , text ) => [
+                {...todo},
+                {
+                  id: todo.length,
+                  text,
+                  done: false,
+                },
+              ],
+            }),
+          },
+          REMOVE_TODO: {
+            actions: assign({
+              todos: ({ todos },  {id: removeId}) => todos.filter(({ id }) => id !== removeId),
+            }),
+          },
+          SET_TODOS: {
+            actions: assign({
+              todos: (_, { todos }) => todos,
+            }),
+          },
+        },
+      },
+      working: {
+        exit: assign({
+          todos: ({ todos }) => {
+            const newTodos = [...todos];
+            const undoneTodo = newTodos.find(({ done }) => !done);
+            if (undoneTodo) {
+              undoneTodo.done =  true;
+            }
+            return newTodos;
+          },
+        }),
+        on: {
+          END_WORKING: {
+            target: "editing",
+          },
+        },
+      },
+    },
+  },
+  {
+    guards: {
+      haveUndoneTodos: ({ todos }) => todos.some(({ done }) => !done),
+    },
+  }
+);
+
+export function useTodos(initialTodos: Todo[]): {
+  isEditing: boolean;
   todos: Todo[];
   addTodo: (text: string) => void;
-  removeTodo: (removeId: number) => void; 
-}>((set) => ({
-   todos: [{ id: 0, text: "hey there", done: false }],
-   addTodo: (text: string) => set((state) => ({
-    ...state,
-    todos: [...state.todos,
-      { 
-        id: state.todos.length,
+  removeTodo: (id: number) => void;
+  startWorking: () => void;
+  endWorking: () => void;
+} {
+  const [state, send] = useMachine(todoMachine);
+
+  useEffect(() => {
+    send({ type: "SET_TODOS", todos: initialTodos });
+  }, [send, initialTodos]);
+
+  const addTodo = useCallback(
+    (text: string) => {
+      send({
+        type: "ADD_TODO",
         text,
-        done: false,
-      },
-    ]
-   })),
-   removeTodo: (removeId: number) => set((state) => ({
-   ...state,
-   todos: state.todos.filter(({ id }) => id !== removeId)
+      });
+    },
+    [send]
+  );
 
-   })),
-}));
+  const removeTodo = useCallback(
+    (id: number) => {
+      send({
+        type: "REMOVE_TODO",
+        id,
+      });
+    },
+    [send]
+  );
 
-export default useTodos;
+  const startWorking = useCallback(() => {
+    send({type: "START_WORKING"});
+  }, [send]);
+  const endWorking = useCallback(() => {
+    send({type: "END_WORKING"});
+  }, [send]);
+
+  return {
+    isEditing: state.matches("editing"),
+    todos: state.context.todos,
+    addTodo,
+    removeTodo,
+    startWorking,
+    endWorking,
+  };
+}
